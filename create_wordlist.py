@@ -13,8 +13,14 @@ use_nlp = True                      # use NLP model
 max_length = 0                      # max password length
 min_length = 0                      # min password length (default is set to length of previous password)
 model = None                        # variable for storing NLP model
-max_passwords = 0                   # max passwords outputted by the program
+max_passwords = 0                   # max passwords outputted by the program 
 model_path = "models/w2v/w2v_wikipedia_and_reddit_comments.model"
+ascii_art = """ __   __     __         ______   ______     ______     ______     __     __     ______     ______     _____     ______    
+/\ \"-.\ \   /\ \       /\  == \ /\  __ \   /\  ___\   /\  ___\   /\ \  _ \ \   /\  __ \   /\  == \   /\  __-.  /\  ___\   
+\ \ \-.  \  \ \ \____  \ \  _-/ \ \  __ \  \ \___  \  \ \___  \  \ \ \/ \".\ \  \ \ \/\ \  \ \  __<   \ \ \/\ \ \ \___  \  
+ \ \_\\\" \_\  \ \_____\  \ \_\    \ \_\ \_\  \/\_____\  \/\_____\  \ \__/\".~\_\  \ \_____\  \ \_\ \_\  \ \____-  \/\_____\ 
+  \/_/ \/_/   \/_____/   \/_/     \/_/\/_/   \/_____/   \/_____/   \/_/   \/_/   \/_____/   \/_/ /_/   \/____/   \/_____/ 
+                                                                                                                          """
 
 def replace_all_occurences_forward(pw,char,sub,pos):
     s = pw[pos:]                                # clips string from pos forward
@@ -281,6 +287,7 @@ if __name__ == "__main__":
     pw = pw.replace(',','')                         # remove char to split passphrase 
     stopwords = set(stopwords.words('english'))
 
+    print(ascii_art)
     print_settings()
 
     if has_numbers:
