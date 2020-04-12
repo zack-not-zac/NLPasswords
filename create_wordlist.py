@@ -6,7 +6,8 @@ from sys import argv
 import re
 from time import time
 
-possible_passwords = set()          # a set is used as it does not allow for duplicate entries & allows for efficient searching
+total_time = time()                # starts a timer
+possible_passwords = list()         # a list for generated pws
 has_numbers = True                  # numbers flag for passwords
 has_special_chars = True            # special chars for passwords
 use_nlp = True                      # use NLP model
@@ -18,6 +19,7 @@ unlimited_passwords = True          # unlimited passwords allowed by the program
 try_all_capitalisation = False      # specify if the script should generate all possible capitalisations
 must_have_numbers = False           # if generated passwords must have numbers
 must_have_special_chars = False     # if generated passwords must have special chars
+pw = ''                             # var to hold password
 model_path = "models/w2v/w2v_wikipedia_and_reddit_comments.model"
 # ascii art generated with https://manytools.org/hacker-tools/ascii-banner/
 ascii_art = r""" __   __     __         ______   ______     ______     ______     __     __     ______     ______     _____     ______    
@@ -33,72 +35,75 @@ def replace_all_occurences_forward(pw,char,sub,pos):
     s = s_before + s.replace(char,sub)          # stitches string back together with all substitutions after pos implemented
     return s
 
-def append_to_set(s,max_words):
+def append_to_list(s,max_words):
     items_added = 0
+    global possible_passwords
     for i,item in enumerate(s):
-        if len(item) <= max_length or max_length == 0 and len(item) >= min_length:  # if the string is less than max length or more than min length, max length = 0 (no limit)
-            if not has_numbers and re.search(r'\d',item) ==  None:             # if pw shouldn't have numbers and doesn't
-                if not has_special_chars and re.search(r'\W',item) == None:
-                    possible_passwords.add(item)
+        if item not in possible_passwords and item != pw:
+            if len(item) <= max_length or max_length == 0 and len(item) >= min_length:  # if the string is less than max length or more than min length, max length = 0 (no limit)
+                if not has_numbers and re.search(r'\d',item) ==  None:             # if pw shouldn't have numbers and doesn't
+                    if not has_special_chars and re.search(r'\W',item) == None:
+                        possible_passwords.append(item)
+                        items_added += 1
+                elif not has_special_chars and re.search(r'\W',item) == None:     # if pw shouldn't have special chars and doesnt
+                    possible_passwords.append(item)
                     items_added += 1
-            elif not has_special_chars and re.search(r'\W',item) == None:     # if pw shouldn't have special chars and doesnt
-                possible_passwords.add(item)
-                items_added += 1
 
-            if must_have_numbers and re.search(r'\d',item) != None:
-                if must_have_special_chars and re.search(r'\W',item) != None:
-                    possible_passwords.add(item)
+                if must_have_numbers and re.search(r'\d',item) != None:
+                    if must_have_special_chars and re.search(r'\W',item) != None:
+                        possible_passwords.append(item)
+                        items_added += 1
+                elif must_have_special_chars and re.search(r'\W',item) != None:
+                    possible_passwords.append(item)
                     items_added += 1
-            elif must_have_special_chars and re.search(r'\W',item) != None:
-                possible_passwords.add(item)
-                items_added += 1
-            else:
-                possible_passwords.add(item)
-                items_added += 1
+                else:
+                    possible_passwords.append(item)
+                    items_added += 1
 
-        if i >= max_words and not unlimited_passwords:
-            return items_added # returns items_added if function generated more than max_words
+            if i >= max_words and not unlimited_passwords:
+                return items_added # returns items_added if function generated more than max_words
 
     if not unlimited_passwords:
         return items_added
     else:
         return 0
 
-def append_string_to_set(s):
-    if len(s) <= max_length or max_length == 0 and len(s) >= min_length:  # if the string is less than max length or more than min length, max length = 0 (no limit)
-        if not has_numbers and re.search(r'\d',s) ==  None:             # if pw shouldn't have numbers and doesn't
-           if not has_special_chars and re.search(r'\W',s) == None:
-                possible_passwords.add(s)
-                if not unlimited_passwords:
-                    return 1
-                else:
-                    return 0
-        elif not has_special_chars and re.search(r'\W',s) == None:     # if pw shouldn't have special chars and doesnt
-                possible_passwords.add(s)
-                if not unlimited_passwords:
-                    return 1
-                else:
-                    return 0
+def append_string_to_list(s):
+    if s not in possible_passwords and item != pw:
+        if len(s) <= max_length or max_length == 0 and len(s) >= min_length:  # if the string is less than max length or more than min length, max length = 0 (no limit)
+            if not has_numbers and re.search(r'\d',s) ==  None:             # if pw shouldn't have numbers and doesn't
+                if not has_special_chars and re.search(r'\W',s) == None:
+                    possible_passwords.append(s)
+                    if not unlimited_passwords:
+                        return 1
+                    else:
+                        return 0
+            elif not has_special_chars and re.search(r'\W',s) == None:     # if pw shouldn't have special chars and doesnt
+                    possible_passwords.append(s)
+                    if not unlimited_passwords:
+                        return 1
+                    else:
+                        return 0
 
-        if must_have_numbers and re.search(r'\d',s) != None:
-            if must_have_special_chars and re.search(r'\W',s) != None:
-                possible_passwords.add(s)
+            if must_have_numbers and re.search(r'\d',s) != None:
+                if must_have_special_chars and re.search(r'\W',s) != None:
+                    possible_passwords.append(s)
+                    if not unlimited_passwords:
+                        return 1
+                    else:
+                        return 0
+            elif must_have_special_chars and re.search(r'\W',s) != None:
+                possible_passwords.append(s)
                 if not unlimited_passwords:
                     return 1
                 else:
                     return 0
-        elif must_have_special_chars and re.search(r'\W',s) != None:
-            possible_passwords.add(s)
-            if not unlimited_passwords:
-                return 1
             else:
-                return 0
-        else:
-            possible_passwords.add(s)
-            if not unlimited_passwords:
-                return 1
-            else:
-                return 0
+                possible_passwords.append(s)
+                if not unlimited_passwords:
+                    return 1
+                else:
+                    return 0
 
     return 0
 
@@ -109,7 +114,7 @@ def put_char_in_pos(sub,pos,pw):
     return s
 
 def char_substitution(word):
-    substituted_passwords = set()
+    substituted_passwords = list()
     chars = {       # dictionary for char substitutions (https://code.sololearn.com/ceEeO2m4wGBG/#py)
         "a":"4,@",
         "b":"6",
@@ -130,14 +135,14 @@ def char_substitution(word):
     for sub in substitutions:
         positions = [x for x,v in enumerate(word) if v.lower() == sub[0]]   # get all positions char (v) exists
         for pos in positions:                                               # for each position
-            substituted_passwords.add(put_char_in_pos(sub,pos,word))        # swap chars and add to list
+            substituted_passwords.append(put_char_in_pos(sub,pos,word))     # swap chars and add to list
             if len(positions) > 1:                                          # if more than 1 position
                 s = replace_all_occurences_forward(word,sub[0],sub[1],pos)  # replace every occurence from current pos forward
-                substituted_passwords.add(s)
+                substituted_passwords.append(s)
 
             temp_substituted_passwords = substituted_passwords.copy()       # create a copy of current substituted words set
             for item in temp_substituted_passwords:                         # for each item in substituted_passwords before forloop began
-                substituted_passwords.add(put_char_in_pos(sub,pos,item))    # apply this substitution and add to substituted passwords
+                substituted_passwords.append(put_char_in_pos(sub,pos,item)) # apply this substitution and add to substituted passwords
 
     return substituted_passwords
 
@@ -181,44 +186,49 @@ def remove_substitution(word):
 
 def iterate_num_at_start_of_string(s):
     i = 0
-    generated_pws = set()
+    generated_pws = list()
+    subs = char_substitution(s[1:])
     while i < 10:
         if s[0] != i:                   # finds number
-            s = str(i) + s[1:]          # adds i to the start of the string
-            generated_pws.add(s)
+            temp = str(i) + s[1:]          # adds i to the start of the string
+            generated_pws.append(temp)
+            for sub in subs:
+                generated_pws.append(str(i) + sub)
             i += 1
 
     return generated_pws
 
 def iterate_num_at_end_of_string(s):
     i = 0
-    length = len(s)
-    generated_pws = set()
+    generated_pws = list()
+    subs = char_substitution(s[:-1])
     while i < 10:
-        if s[0] != i:                       # finds number
-            s = str(i) + s[:length]         # adds i to the end of the string
-            generated_pws.add(s)
+        if s[-1] != i:                      # finds number
+            temp = s[:-1] + str(i)             # adds i to the end of the string
+            generated_pws.append(temp)
+            for sub in subs:
+                if sub+str(i) not in generated_pws:
+                    generated_pws.append(sub + str(i))         
             i += 1
 
     return generated_pws
 
 def add_most_popular_numbers(pw):
-    generated_pws = set()
+    generated_pws = list()
+    if re.search(r'(^\d[a-zA-Z])',pw) != None:          # if password starts with just 1 number
+        generated_pws+=iterate_num_at_start_of_string(pw)
+
+    if re.search(r'([a-zA-Z]\d$)',pw) != None:          # if password ends with just 1 number
+        generated_pws+=iterate_num_at_end_of_string(pw)
+
+    s = remove_nums_before_s(pw)                        # remove numbers from start of string
+    s = remove_nums_after_s(s)                          # remove numbers from end of string
+
     with open("number_occurences.csv") as f:
         for line in f:
-            if re.search(r'(^\d[a-zA-Z])',pw) != None:           # if password starts with just 1 number
-                for s in generated_pws:
-                    generated_pws.union(iterate_num_at_start_of_string(s))
-
-            if re.search(r'([a-zA-Z]\d$)',pw) != None:           # if password ends with just 1 number
-                for s in generated_pws:
-                    generated_pws.union(iterate_num_at_end_of_string(s))
-
-            num = line.split(',')[0]                # extract number from most common numbers
-            s = re.sub(r'^\d+',r'',pw)              # remove numbers from start of string
-            s = re.sub(r'\d+$',r'',pw)              # remove numbers from end of string
-            generated_pws.add(str(num) + s)
-            generated_pws.add(s + str(num))         # append most popular numbers before and after password
+            num = int(line.split(',')[0].strip())       # extract number from most common numbers
+            generated_pws.append(str(num) + s)
+            generated_pws.append(s + str(num))          # append most popular numbers before and after password
 
     return generated_pws
 
@@ -230,8 +240,8 @@ def remove_nums_after_s(s):         # removes nums at end of string
 
 def query_model(word):
     num_of_words = 5
-    results = set()
-    most_similar = []
+    results = list()
+    most_similar = list()
     global model
     global model_path
 
@@ -277,7 +287,7 @@ def query_model(word):
 
     for item in most_similar:
         if item[1] > 0.7:                                      # if likeness > 0.7
-            results.add(item[0])
+            results.append(item[0])
 
     return results
 
@@ -381,7 +391,7 @@ if __name__ == "__main__":
 
     pw = str(argv[1]).strip()
     outpath = pw + '.txt'               # default outpath is [inputted password].txt in current directory"
-
+    
     for arg in argv:
         if '-o=' in arg:
             outpath = arg.split('=')[-1]
@@ -429,14 +439,14 @@ if __name__ == "__main__":
     words_per_func = max_passwords/num_of_funcs
 
     print("Adding capitalisation to current password...")
-    max_passwords -= append_to_set(capitalise_letters(passphrase),words_per_func)
+    max_passwords -= append_to_list(capitalise_letters(passphrase),words_per_func)
     # sets max_passwords to how many spaces are left
     if has_numbers:
         print("Adding popular numbers to original password...")
-        max_passwords -= append_to_set(add_most_popular_numbers(pw),(max_passwords/num_of_funcs))
+        max_passwords -= append_to_list(add_most_popular_numbers(pw),(max_passwords/num_of_funcs))
 
     print("Removing any substitution from original password...")
-    max_passwords -= append_to_set(remove_substitution(pw),(max_passwords/num_of_funcs))
+    max_passwords -= append_to_list(remove_substitution(pw),(max_passwords/num_of_funcs))
     print("Performing character substitution on original password...")
     char_substitutes = char_substitution(pw)
 
@@ -445,8 +455,8 @@ if __name__ == "__main__":
         for s in char_substitutes:
             char_substitutes_with_num = add_most_popular_numbers(s)
 
-    max_passwords -= append_to_set(char_substitutes,(max_passwords/num_of_funcs))
-    max_passwords -= append_to_set(char_substitutes_with_num,(max_passwords/num_of_funcs))
+    max_passwords -= append_to_list(char_substitutes,(max_passwords/num_of_funcs))
+    max_passwords -= append_to_list(char_substitutes_with_num,(max_passwords/num_of_funcs))
 
     if use_nlp:
         startnum = None
@@ -478,18 +488,18 @@ if __name__ == "__main__":
                     if endnum != None:
                         tempword += str(endnum)             # appends endnum to item if exists
 
-                    result = append_string_to_set(tempword)# adds to set
+                    result = append_string_to_list(tempword)# adds to set
                     max_passwords -= result
                     count += result
                     if count > max_words and max_words != 0:
                         continue
 
                     for sub in charsub:
-                        result= append_string_to_set(sub)      # adds sub to set
+                        result= append_string_to_list(sub)      # adds sub to set
                         max_passwords -= result
                         count += result
                         tempword = tempword.replace(item,sub)
-                        result = append_string_to_set(tempword) # adds sub with start/endnums to set
+                        result = append_string_to_list(tempword) # adds sub with start/endnums to set
                         count += result
                         max_passwords -= result
                         if max_passwords < 0:
@@ -497,7 +507,7 @@ if __name__ == "__main__":
                         elif count > max_words and max_words != 0:
                             break
                 else:
-                    result = append_string_to_set(pw.replace(word,item))
+                    result = append_string_to_list(pw.replace(word,item))
                     count += result
                     max_passwords -= result
 
@@ -505,7 +515,7 @@ if __name__ == "__main__":
                     break
                 if len(item) > min_length:
                     if count < max_words or max_words == 0:
-                        result = append_to_set(popular_nums,max_words)
+                        result = append_to_list(popular_nums,max_words)
                         count += result
                         max_passwords -= result
                         if max_passwords < 0:
@@ -515,7 +525,7 @@ if __name__ == "__main__":
                 else:
                     print(item + " - Word not longer than min length, skipping char substitution.")
 
-    print('Generated ' + str(len(possible_passwords)) + ' possible passwords using specified requirements.')
+    print('Generated ' + str(len(possible_passwords)) + ' possible passwords using specified requirements in ' + str(round(time()-total_time,2)) + ' seconds.')
 
     try:
         outfile = open(outpath,'w+')
