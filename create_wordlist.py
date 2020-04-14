@@ -6,7 +6,8 @@ from sys import argv
 import re
 from time import time
 
-total_time = time()                # starts a timer
+total_time = time()                 # starts a timer
+num_of_words = 5                    # num of words returned by the NLP model
 possible_passwords = list()         # a list for generated pws
 has_numbers = True                  # numbers flag for passwords
 has_special_chars = True            # special chars for passwords
@@ -117,7 +118,7 @@ def char_substitution(word):
     substituted_passwords = list()
     chars = {       # dictionary for char substitutions (https://code.sololearn.com/ceEeO2m4wGBG/#py)
         "a":"4,@",
-        "b":"6",
+        "b":"6,8",
         "e":"3,€",
         "g":"6,9",
         "i":"1,!",
@@ -125,9 +126,15 @@ def char_substitution(word):
         "o":"0",
         "s":"5,$",
         "t":"7",
-        "z":"2,5"}
+        "z":"2,5",
+        "1":"!",
+        "4":"@"}
 
     substitutions = set()
+    if must_have_special_chars or unlimited_passwords:
+        for char in ['@','#','!','£','$','%','^','&','*','?','%']:# common typeable special chars used to meet password rules (based on https://github.com/danielmiessler/SecLists/blob/master/Passwords/Permutations/1337speak.txt)
+            substituted_passwords.append(char + word)           # add char before
+            substituted_passwords.append(word + char)           # add char after
     for char in word:                                                       # for each character in password
         if chars.get(char.lower()) != None:                                 # if a substitution exists
             for char_substitute in chars.get(char.lower()).split(','):      # get all substitutions
@@ -141,8 +148,10 @@ def char_substitution(word):
                 substituted_passwords.append(s)
 
             temp_substituted_passwords = substituted_passwords.copy()       # create a copy of current substituted words set
-            for item in temp_substituted_passwords:                         # for each item in substituted_passwords before forloop began
-                substituted_passwords.append(put_char_in_pos(sub,pos,item)) # apply this substitution and add to substituted passwords
+            for item in temp_substituted_passwords:
+                temp = put_char_in_pos(sub,pos,item)                        # for each item in substituted_passwords before forloop began
+                if temp not in substituted_passwords:
+                    substituted_passwords.append(temp)                      # apply this substitution and add to substituted passwords
 
     return substituted_passwords
 
@@ -156,6 +165,7 @@ def remove_substitution(word):
         "6":"b,g",
         "3":"e",
         "9":"g",
+        "8":"b",
         "7":"t",
         "€":"e",
         "1":"l,i",
@@ -215,11 +225,25 @@ def iterate_num_at_end_of_string(s):
 
 def add_most_popular_numbers(pw):
     generated_pws = list()
-    if re.search(r'(^\d[a-zA-Z])',pw) != None:          # if password starts with just 1 number
+    if re.search(r'^\d',pw) != None:          # if password starts with just 1 number
         generated_pws+=iterate_num_at_start_of_string(pw)
 
-    if re.search(r'([a-zA-Z]\d$)',pw) != None:          # if password ends with just 1 number
+    if re.search(r'\d$',pw) != None:          # if password ends with just 1 number
         generated_pws+=iterate_num_at_end_of_string(pw)
+
+    if re.search(r'^[\d\W]+',pw) != None:   # if word starts with numbers or special chars
+        obj = re.search(r'^[\d\W]+',pw)     # get search object
+        end = obj.span()[1]                 # get span of match
+        num = pw[:end]                      # get starting nums or chars
+        word = pw[end:]                     # strip from word
+        generated_pws.append(word + num)    # add numbers or chars to end of password and add to list
+    elif re.search(r'[\d\W]+$',pw) != None: # if password ends with numbers or special chars
+        obj = re.search(r'[\d\W]+$',pw)     # get search object
+        start = obj.span()[0]               # get span of match
+        num = pw[start:]                    # get ending nums or chars
+        word = pw[:start]                   # strip from word
+        generated_pws.append(num + word)    # add numbers or chars to start of password and add to list
+
 
     s = remove_nums_before_s(pw)                        # remove numbers from start of string
     s = remove_nums_after_s(s)                          # remove numbers from end of string
@@ -232,24 +256,35 @@ def add_most_popular_numbers(pw):
 
     return generated_pws
 
-def remove_nums_before_s(s):        # removes nums at start of string
-    return re.sub(r'^\d',"",s)
+def remove_nums_before_s(s):        # removes nums or special chars at start of string
+    return re.sub(r'^[\d\W]+',"",s)
 
 def remove_nums_after_s(s):         # removes nums at end of string
-    return re.sub(r'\d+$',"",s)
+    return re.sub(r'[\d\W]+$',"",s)
+
+def capitalise_first_char(s):
+    l = list(s)
+    l[0] = l[0].upper()
+    return ''.join(l)
 
 def query_model(word):
-    num_of_words = 5
     results = list()
     most_similar = list()
     global model
     global model_path
+    global num_of_words
+    global stopwords
+
+    if list(word)[0].isupper():
+        firstupper = True
+    else:
+        firstupper = False    
 
     if model == None:               # if model is not initialised
         print("Loading Natural Language Processing Model...")
         try:
             start = time()
-            nlp_model = w2v.load(model_path)
+            model = w2v.load(model_path)
             print("Model Loaded Successfully! Took " + str(round(time()-start,2)) + " seconds.")
         except FileNotFoundError:
             print("Error: Model does not exist in path. Exiting...")
@@ -263,33 +298,88 @@ def query_model(word):
     if word not in stopwords:                                   # only queries the model if word is not a stopword
         try:
             print("Querying model for: " + word)
-            most_similar = nlp_model.wv.most_similar(word, topn=num_of_words)
+            most_similar = model.wv.most_similar(word, topn=num_of_words)
         except KeyError:
             word_found = False
             possible_word = remove_nums_after_s(word)
             possible_word = remove_nums_before_s(possible_word)
             try:
-                most_similar = nlp_model.wv.most_similar(possible_word,topn=num_of_words)
+                most_similar = model.wv.most_similar(possible_word,topn=num_of_words)
                 word_found = True                               # becomes true if exception does not occur
                 print("Word stripped to: " + possible_word)
             except KeyError:
-                for ret_word in remove_substitution(possible_word):
+                for ret_word in remove_substitution(word):
                     try:
-                        most_similar = nlp_model.wv.most_similar(possible_word,topn=num_of_words)
+                        most_similar = model.wv.most_similar(ret_word,topn=num_of_words)
                         word_found = True                               # becomes true if exception does not occur
                         print("Word stripped to: " + ret_word)
                     except KeyError:
-                        continue
-                    
+                        try:
+                            ret_word = remove_nums_after_s(ret_word)
+                            ret_word = remove_nums_before_s(ret_word)
+                            most_similar = model.wv.most_similar(ret_word,topn=num_of_words)
+                            word_found = True
+                            print("Word stripped to: " + ret_word)
+                        except KeyError:
+                            continue
 
             if word_found == False:
                 print(word + " - Could not find result for this word in NLP model. This word will be skipped")
 
     for item in most_similar:
-        if item[1] > 0.7:                                      # if likeness > 0.7
-            results.append(item[0])
+        if item[1] > 0.5:                                      # if likeness > 0.7
+            if firstupper:
+                result.append(capitalise_first_char(item[0]))
+            else:
+                results.append(item[0])
 
     return results
+
+def query_model_list(l):
+    most_similar = list()
+    global model
+    global model_path
+    global num_of_words
+    global stopwords
+    query = list()
+
+    if model == None:               # if model is not initialised
+        print("Loading Natural Language Processing Model...")
+        try:
+            start = time()
+            model = w2v.load(model_path)
+            print("Model Loaded Successfully! Took " + str(round(time()-start,2)) + " seconds.")
+        except FileNotFoundError:
+            print("Error: Model does not exist in path. Exiting...")
+            exit()
+        except ValueError:
+            print("Path is not a valid model. Perhaps it is corrupt? Exiting...")
+            exit()
+    
+    for s in l:
+        remove_nums_before_s(s)
+        remove_nums_after_s(s)
+        if s not in stopwords:
+            query.append(s)
+
+    try:
+        most_similar = model.wv.most_similar(query,topn=num_of_words)
+    except KeyError:
+        for i,item in enumerate(query):
+            for ret in remove_substitution(item):
+                try:
+                    model.wv.most_similar(ret,topn=1)
+                    query[i] = ret
+                except KeyError:
+                    continue
+
+    try:
+        most_similar = model.wv.most_similar(query,topn=num_of_words)
+    except KeyError:
+        print('1 or more words in passphrase not in model. Unable to solve by removing character substitution, skipping...')
+        return []
+    
+    return most_similar
 
 def print_settings():
     global has_numbers
@@ -386,7 +476,8 @@ if __name__ == "__main__":
         "   -model-path=PATH TO CUSTOM MODEL (Default = " + model_path + ")\n"
         "   -must-have-numbers\n"+
         "   -must-have-special-chars\n"+
-        "   -try-all-capitalisation (will try every possible pattern using capitalisation)")
+        "   -try-all-capitalisation (will try every possible pattern using capitalisation)\n" +
+        "   -num-of-words=[NUMBER OF WORDS TO BE RETURNED BY THE MODEL] (default = 5)")
         exit()
 
     pw = str(argv[1]).strip()
@@ -429,6 +520,12 @@ if __name__ == "__main__":
             must_have_special_chars = True
         elif 'try-all-capitalisation' in arg:
             try_all_capitalisation = True
+        elif '-num-of-words' in arg:
+            try:
+                num = int(arg.split('=')[-1])
+            except ValueError:
+                print(str(arg) + " - value not convertible to integer")
+                exit()
 
     passphrase = pw.split(',')                      # split passphrase into individual words
     pw = pw.replace(',','')                         # remove char to split passphrase
@@ -461,14 +558,25 @@ if __name__ == "__main__":
     if use_nlp:
         startnum = None
         endnum = None
-        for word in passphrase:
+        count = 0                                   # ensures each word does not use more than it was dedicated in wordlist
+        result = 0
+        if len(passphrase) > 1:
             if not unlimited_passwords:
-                max_words = int(max_passwords/(len(passphrase)*5))
+                max_words = int(max_passwords/((len(passphrase)+1)*num_of_words))
             else:
                 max_words = 0
+
+            result = append_to_list(query_model_list(passphrase),max_words)
+            max_passwords -= result
+            count += result
+        else:
+            if not unlimited_passwords:
+                max_words = int(max_passwords/((len(passphrase))*num_of_words))
+            else:
+                max_words = 0
+                
+        for word in passphrase:
             for item in query_model(word):
-                count = 0                                   # ensures each word does not use more than it was dedicated in wordlist
-                result = 0
                 tempword = str()
                 startend_nums = strip_startend_nums_from_s(word)# retreive any numbers at start or end
                 popular_nums = add_most_popular_numbers(item)# add most popular numbers to the item
