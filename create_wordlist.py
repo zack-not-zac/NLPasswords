@@ -225,10 +225,10 @@ def iterate_num_at_end_of_string(s):
 
 def add_most_popular_numbers(pw):
     generated_pws = list()
-    if re.search(r'^\d',pw) != None:          # if password starts with just 1 number
+    if re.search(r'^\d[a-zA-Z]+',pw) != None:# if password starts with just 1 number
         generated_pws+=iterate_num_at_start_of_string(pw)
 
-    if re.search(r'\d$',pw) != None:          # if password ends with just 1 number
+    if re.search(r'[a-zA-Z]+\d$',pw) != None:# if password ends with just 1 number
         generated_pws+=iterate_num_at_end_of_string(pw)
 
     if re.search(r'^[\d\W]+',pw) != None:   # if word starts with numbers or special chars
