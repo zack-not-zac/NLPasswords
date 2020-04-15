@@ -16,7 +16,7 @@ if __name__ == '__main__':
                 testpasswords.append(tuple(line.split(':')))
 
     for testset in testpasswords:
-        command = '/home/zack/Desktop/Hons-Project/create_wordlist.py ' + testset[0]
+        command = '/home/zack/Desktop/Hons-Project/create_wordlist.py ' + str(testset[0])
         process = subprocess.Popen(command, stdout=subprocess.PIPE)
         output, error = process.communicate()
 
