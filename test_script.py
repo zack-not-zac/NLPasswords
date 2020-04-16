@@ -28,9 +28,13 @@ def main():
             generated_pw = generated_pw.strip()
             if generated_pw == testset[1]:
                 outfile.write(wordlist + ',' +
-                              testset[0] + ',' + testset[1] + ',' + str(attempts) + '\n')
+                              testset[0].replace(',','') + ',' + testset[1] + ',' + str(attempts) + '\n')
+                found = True
+                break
             elif attempts == len(pws)-1 and found == False:
-                outfile.write(wordlist + ',' + testset[0] + ',-,NF\n')
+                outfile.write(wordlist + ',' + testset[0].replace(',','') + ',-,NF\n')
+
+        subprocess.call('rm ' + testset[0] + '.txt',shell=True,stdout=subprocess.DEVNULL)
 
         # test with rockyou.txt
         wordlist = 'rockyou'
@@ -40,10 +44,12 @@ def main():
                 found = False
                 if pw == testset[1]:
                     outfile.write(wordlist + ',' +
-                                  testset[0] + ',' + testset[1] + ',' + str(attempts) + '\n')
+                                  testset[0].replace(',','') + ',' + testset[1] + ',' + str(attempts) + '\n')
+                    found = True
+                    break
 
             if found == False:
-                outfile.write(wordlist + ',' + testset[0] + ',-,NF\n')
+                outfile.write(wordlist + ',' + testset[0].replace(',','') + ',-,NF\n')
     
     outfile.close()
 
