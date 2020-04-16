@@ -17,12 +17,7 @@ if __name__ == '__main__':
 
     for testset in testpasswords:
         command = '/home/zack/Desktop/Hons-Project/create_wordlist.py ' + str(testset[0])
-        process = subprocess.Popen(command, stdout=subprocess.PIPE)
-        output, error = process.communicate()
-
-        if error != None:
-            print(error)
-            exit()
+        _ = subprocess.call(command,shell=True)
 
         # test with custom wordlist
         pws = open(testset[0] + '.txt', 'r').readlines()
