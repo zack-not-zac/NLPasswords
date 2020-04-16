@@ -6,10 +6,6 @@ from sys import argv
 import re
 from time import time
 
-# DEBUG
-from os import chdir
-chdir('/home/zack/Desktop/Hons-Project')
-
 total_time = time()                 # starts a timer
 num_of_words = 5                    # num of words returned by the NLP model
 possible_passwords = list()         # a list for generated pws
@@ -135,7 +131,7 @@ def char_substitution(word):
     chars = {       # dictionary for char substitutions (https://code.sololearn.com/ceEeO2m4wGBG/#py)
         "a":"4,@",
         "b":"6,8",
-        "e":"3,€",
+        "e":"3",
         "g":"6,9",
         "i":"1,!",
         "l":"1",
@@ -377,8 +373,9 @@ def query_model_list(l):
             exit()
     
     for s in l:
-        remove_nums_before_s(s)
-        remove_nums_after_s(s)
+        s = remove_nums_before_s(s)
+        s = remove_nums_after_s(s)
+        s = s.lower()
         if s not in stopwords:
             query.append(s)
 
@@ -481,71 +478,70 @@ def strip_startend_nums_from_s(word):       # returns a list of 2 strings, nums 
 
 if __name__ == "__main__":
     num_of_funcs = 6        # number of functions applied to password
-    # if len(argv) < 2:
-    #     print("Usage: " + str(argv[0]) + " [PASSWORD]")
-    #     print("Seperate words in passphrases with ','")
-    #     print("Flags (Place flags after password):\n"+
-    #     "   -o=OUTPUT FILE (Default = current directory, [PASSWORD].txt)\n" +
-    #     "   -min-length=MIN LENGTH (Default = 0)\n" +
-    #     "   -max-length=MAX LENGTH (Default = unlimited)\n" +
-    #     "   -max-passwords=MAX WORDS GENERATED (Default = unlimited)\n"
-    #     "   -no-numbers\n" +
-    #     "   -no-special-chars\n" +
-    #     "   -no-nlp\n" +
-    #     "   -model-path=PATH TO CUSTOM MODEL (Default = " + model_path + ")\n"
-    #     "   -must-have-numbers\n"+
-    #     "   -must-have-special-chars\n"+
-    #     "   -try-all-capitalisation (will try every possible pattern using capitalisation)\n" +
-    #     "   -num-of-words=[NUMBER OF WORDS TO BE RETURNED BY THE MODEL] (default = 5)")
-    #     exit()
+    if len(argv) < 2:
+        print("Usage: " + str(argv[0]) + " [PASSWORD]")
+        print("Seperate words in passphrases with ','")
+        print("Flags (Place flags after password):\n"+
+        "   -o=OUTPUT FILE (Default = current directory, [PASSWORD].txt)\n" +
+        "   -min-length=MIN LENGTH (Default = 0)\n" +
+        "   -max-length=MAX LENGTH (Default = unlimited)\n" +
+        "   -max-passwords=MAX WORDS GENERATED (Default = unlimited)\n"
+        "   -no-numbers\n" +
+        "   -no-special-chars\n" +
+        "   -no-nlp\n" +
+        "   -model-path=PATH TO CUSTOM MODEL (Default = " + model_path + ")\n"
+        "   -must-have-numbers\n"+
+        "   -must-have-special-chars\n"+
+        "   -try-all-capitalisation (will try every possible pattern using capitalisation)\n" +
+        "   -num-of-words=[NUMBER OF WORDS TO BE RETURNED BY THE MODEL] (default = 5)")
+        exit()
 
-    # pw = str(argv[1]).strip()
-    pw = 'Boil,The,Jug2'
+    pw = str(argv[1]).strip()
     outpath = pw + '.txt'               # default outpath is [inputted password].txt in current directory"
     
-    # for arg in argv:
-    #     if '-o=' in arg:
-    #         outpath = arg.split('=')[-1]
-    #     elif '-min-length=' in arg:
-    #         try:
-    #             min_length = int(''.join(arg.split('=')[-1]))
-    #         except ValueError:
-    #             print(arg + " - value not convertible to integer")
-    #             exit()
-    #     elif '-max-length=' in arg:
-    #         try:
-    #             max_length = int(''.join(arg.split('=')[-1]))
-    #         except ValueError:
-    #             print(arg + " - value not convertible to integer")
-    #             exit()
-    #     elif '-max-passwords=' in arg:
-    #         try:
-    #             max_passwords = int(''.join(arg.split('=')[-1]))
-    #             unlimited_passwords = False
-    #         except ValueError:
-    #             print(arg + " - value not convertible to integer")
-    #             exit()
-    #     elif '-no-numbers' in arg:
-    #         has_numbers = False
-    #     elif '-no-special-chars' in arg:
-    #         has_special_chars = False
-    #     elif '-no-nlp' in arg:
-    #         use_nlp = False
-    #         num_of_funcs -=1
-    #     elif 'model-path=' in arg:
-    #         model_path = arg.split('=')[-1]
-    #     elif '-must-have-numbers' in arg:
-    #         must_have_numbers = True
-    #     elif '-must-have-special-chars' in arg:
-    #         must_have_special_chars = True
-    #     elif 'try-all-capitalisation' in arg:
-    #         try_all_capitalisation = True
-    #     elif '-num-of-words' in arg:
-    #         try:
-    #             num = int(arg.split('=')[-1])
-    #         except ValueError:
-    #             print(str(arg) + " - value not convertible to integer")
-    #             exit()
+    for arg in argv:
+        if '-o=' in arg:
+            outpath = arg.split('=')[-1]
+        elif '-min-length=' in arg:
+            try:
+                min_length = int(''.join(arg.split('=')[-1]))
+            except ValueError:
+                print(arg + " - value not convertible to integer")
+                exit()
+        elif '-max-length=' in arg:
+            try:
+                max_length = int(''.join(arg.split('=')[-1]))
+            except ValueError:
+                print(arg + " - value not convertible to integer")
+                exit()
+        elif '-max-passwords=' in arg:
+            try:
+                max_passwords = int(''.join(arg.split('=')[-1]))
+                unlimited_passwords = False
+            except ValueError:
+                print(arg + " - value not convertible to integer")
+                exit()
+        elif '-no-numbers' in arg:
+            has_numbers = False
+        elif '-no-special-chars' in arg:
+            has_special_chars = False
+        elif '-no-nlp' in arg:
+            use_nlp = False
+            num_of_funcs -=1
+        elif 'model-path=' in arg:
+            model_path = arg.split('=')[-1]
+        elif '-must-have-numbers' in arg:
+            must_have_numbers = True
+        elif '-must-have-special-chars' in arg:
+            must_have_special_chars = True
+        elif 'try-all-capitalisation' in arg:
+            try_all_capitalisation = True
+        elif '-num-of-words' in arg:
+            try:
+                num = int(arg.split('=')[-1])
+            except ValueError:
+                print(str(arg) + " - value not convertible to integer")
+                exit()
 
     passphrase = pw.split(',')                      # split passphrase into individual words
     pw = pw.replace(',','')                         # remove char to split passphrase
@@ -595,9 +591,15 @@ if __name__ == "__main__":
                 max_words = int(max_passwords/((len(passphrase)+1)*num_of_words))
             else:
                 max_words = 0
+            
+            most_similar = query_model_list(passphrase)
+            for item in most_similar:
+                for i,passphrase_word in enumerate(passphrase):
+                    if passphrase_word.lower() not in stopwords:
+                        temp = passphrase.copy()
+                        temp[i] = item[0]
+                        max_passwords -= append_string_to_list(''.join(temp))
 
-            result = append_to_list(query_model_list(passphrase),max_words)
-            max_passwords -= result
         else:
             if not unlimited_passwords:
                 max_words = int(max_passwords/((len(passphrase))*num_of_words))
@@ -615,6 +617,8 @@ if __name__ == "__main__":
                             startnum = num[1]               # gets start numbers from pw
                         elif num[0] == 'end':               # if num is end number
                             endnum = num[1]                 # gets end numbers from pw
+
+                item = pw.replace(word,item)
                 
                 popular_nums = add_most_popular_numbers(item)# add most popular numbers to the item
                 charsub = char_substitution(item)           # get char substitution for item
