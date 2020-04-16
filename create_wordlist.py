@@ -37,6 +37,8 @@ def replace_all_occurences_forward(pw,char,sub,pos):
     return s
 
 def append_to_list(s,max_words):
+    if max_words == 0:
+        max_words = 1500            # max number of words that can be added by 1 function
     items_added = 0
     global possible_passwords
     for i,item in enumerate(s):
@@ -70,7 +72,7 @@ def append_to_list(s,max_words):
         return 0
 
 def append_string_to_list(s):
-    if s not in possible_passwords and item != pw:
+    if s not in possible_passwords and s != pw:
         if len(s) <= max_length or max_length == 0 and len(s) >= min_length:  # if the string is less than max length or more than min length, max length = 0 (no limit)
             if not has_numbers and re.search(r'\d',s) ==  None:             # if pw shouldn't have numbers and doesn't
                 if not has_special_chars and re.search(r'\W',s) == None:
@@ -114,6 +116,14 @@ def put_char_in_pos(sub,pos,pw):
     s = ''.join(temp)                           # join list back into str
     return s
 
+def add_common_startend_chars(pw):
+    ret = []
+    for char in ['@','#','!','£','$','%','^','&','*','?','%']:# common typeable special chars used to meet password rules (based on https://github.com/danielmiessler/SecLists/blob/master/Passwords/Permutations/1337speak.txt)
+        ret.append(char + pw)           # add char before
+        ret.append(pw + char)           # add char after
+    
+    return ret
+
 def char_substitution(word):
     substituted_passwords = list()
     chars = {       # dictionary for char substitutions (https://code.sololearn.com/ceEeO2m4wGBG/#py)
@@ -131,10 +141,7 @@ def char_substitution(word):
         "4":"@"}
 
     substitutions = set()
-    if must_have_special_chars or unlimited_passwords:
-        for char in ['@','#','!','£','$','%','^','&','*','?','%']:# common typeable special chars used to meet password rules (based on https://github.com/danielmiessler/SecLists/blob/master/Passwords/Permutations/1337speak.txt)
-            substituted_passwords.append(char + word)           # add char before
-            substituted_passwords.append(word + char)           # add char after
+
     for char in word:                                                       # for each character in password
         if chars.get(char.lower()) != None:                                 # if a substitution exists
             for char_substitute in chars.get(char.lower()).split(','):      # get all substitutions
@@ -223,7 +230,28 @@ def iterate_num_at_end_of_string(s):
 
     return generated_pws
 
-def add_most_popular_numbers(pw):
+def swap_startend_nums(pw):
+    if re.search(r'[\d\W]+$',pw) != None and re.search(r'^[\d\W]+',pw) != None:
+        startspan = re.search(r'^[\d\W]+',pw).span()[1]
+        endspan = re.search(r'[\d\W]+$',pw).span()[0]
+        start = pw[:startspan]
+        end = pw[endspan:]
+        word = pw[startspan:endspan]
+        return end + word + start           # swap start and end chars/nums
+    elif re.search(r'^[\d\W]+',pw) != None: # if word starts with numbers or special chars
+        obj = re.search(r'^[\d\W]+',pw)     # get search object
+        end = obj.span()[1]                 # get span of match
+        num = pw[:end]                      # get starting nums or chars
+        word = pw[end:]                     # strip from word
+        return word + num                   # add numbers or chars to end of password and add to list
+    elif re.search(r'[\d\W]+$',pw) != None: # if password ends with numbers or special chars
+        obj = re.search(r'[\d\W]+$',pw)     # get search object
+        start = obj.span()[0]               # get span of match
+        num = pw[start:]                    # get ending nums or chars
+        word = pw[:start]                   # strip from word
+        return num + word                   # add numbers or chars to start of password and add to list
+
+def add_most_popular_numbers(pw,top=0,is_char_sub=False):
     generated_pws = list()
     if re.search(r'^\d[a-zA-Z]+',pw) != None:# if password starts with just 1 number
         generated_pws+=iterate_num_at_start_of_string(pw)
@@ -231,28 +259,21 @@ def add_most_popular_numbers(pw):
     if re.search(r'[a-zA-Z]+\d$',pw) != None:# if password ends with just 1 number
         generated_pws+=iterate_num_at_end_of_string(pw)
 
-    if re.search(r'^[\d\W]+',pw) != None:   # if word starts with numbers or special chars
-        obj = re.search(r'^[\d\W]+',pw)     # get search object
-        end = obj.span()[1]                 # get span of match
-        num = pw[:end]                      # get starting nums or chars
-        word = pw[end:]                     # strip from word
-        generated_pws.append(word + num)    # add numbers or chars to end of password and add to list
-    elif re.search(r'[\d\W]+$',pw) != None: # if password ends with numbers or special chars
-        obj = re.search(r'[\d\W]+$',pw)     # get search object
-        start = obj.span()[0]               # get span of match
-        num = pw[start:]                    # get ending nums or chars
-        word = pw[:start]                   # strip from word
-        generated_pws.append(num + word)    # add numbers or chars to start of password and add to list
 
+    if not is_char_sub:
+        pw = remove_nums_before_s(pw)                        # remove numbers from start of string
+        pw = remove_nums_after_s(pw)                          # remove numbers from end of string
 
-    s = remove_nums_before_s(pw)                        # remove numbers from start of string
-    s = remove_nums_after_s(s)                          # remove numbers from end of string
+    i = 1
 
     with open("number_occurences.csv") as f:
         for line in f:
             num = int(line.split(',')[0].strip())       # extract number from most common numbers
-            generated_pws.append(str(num) + s)
-            generated_pws.append(s + str(num))          # append most popular numbers before and after password
+            generated_pws.append(str(num) + pw)
+            generated_pws.append(pw + str(num))          # append most popular numbers before and after password
+            i += 1
+            if i >= top and top != 0:
+                return generated_pws
 
     return generated_pws
 
@@ -404,9 +425,8 @@ def capitalise_letters(phrase):
     ret = set()
     temp_phrase = str()
     for word in phrase:
-        s = list(word)              # split phrase into list of chars
-        s[0] = s[0].upper()         # converts first letter to uppercase
-        temp_phrase += ''.join(s)   # appends capitalised letter word to temp_phrase
+        capitalise_first_char(word)
+        temp_phrase += word   # appends capitalised letter word to temp_phrase
     ret.add(temp_phrase)
     ret.add(''.join(phrase).upper())         # add full capitalisation
     ret.add(''.join(phrase).lower())         # add full lowercase
@@ -537,7 +557,12 @@ if __name__ == "__main__":
 
     print("Adding capitalisation to current password...")
     max_passwords -= append_to_list(capitalise_letters(passphrase),words_per_func)
+    print("Switching any starting or ending numbers or special characters...")
+    max_passwords -= append_string_to_list(swap_startend_nums(pw))
     # sets max_passwords to how many spaces are left
+
+    if has_special_chars and must_have_special_chars or unlimited_passwords:
+            add_common_startend_chars(pw)
     if has_numbers:
         print("Adding popular numbers to original password...")
         max_passwords -= append_to_list(add_most_popular_numbers(pw),words_per_func)
@@ -551,7 +576,7 @@ if __name__ == "__main__":
     if has_numbers:
         print("Adding popular numbers to character substituted passwords...")
         for s in char_substitutes:
-            char_substitutes_with_num += add_most_popular_numbers(s)
+            char_substitutes_with_num += add_most_popular_numbers(s,top=5,is_char_sub=True)      # adds top5 most popular passwords
 
     max_passwords -= append_to_list(char_substitutes,words_per_func)
     max_passwords -= append_to_list(char_substitutes_with_num,words_per_func)
@@ -603,7 +628,7 @@ if __name__ == "__main__":
                 if count > max_words and max_words != 0:
                     continue
                 
-                old = tempword()
+                old = tempword
                 for sub in charsub:
                     result= append_string_to_list(sub)      # adds sub to list
                     max_passwords -= result
