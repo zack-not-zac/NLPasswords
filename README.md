@@ -6,3 +6,6 @@
 ```bash
 pip3 install -r requirements.txt
 ```
+
+## Requirements
+It is recommended to run this script on a system with at least 6GB of RAM to load the model. Using a system with less RAM will result in substantially lower performance and/or crashes
