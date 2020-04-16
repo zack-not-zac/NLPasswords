@@ -329,7 +329,7 @@ def query_model(word):
     for item in most_similar:
         if item[1] > 0.5:                                      # if likeness > 0.7
             if firstupper:
-                result.append(capitalise_first_char(item[0]))
+                results.append(capitalise_first_char(item[0]))
             else:
                 results.append(item[0])
 
