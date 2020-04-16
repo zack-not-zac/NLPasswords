@@ -6,6 +6,10 @@ from sys import argv
 import re
 from time import time
 
+# DEBUG
+from os import chdir
+chdir('/home/zack/Desktop/Hons-Project')
+
 total_time = time()                 # starts a timer
 num_of_words = 5                    # num of words returned by the NLP model
 possible_passwords = list()         # a list for generated pws
@@ -42,29 +46,30 @@ def append_to_list(s,max_words):
     items_added = 0
     global possible_passwords
     for i,item in enumerate(s):
-        if item not in possible_passwords and item != pw:
-            if len(item) <= max_length or max_length == 0 and len(item) >= min_length:  # if the string is less than max length or more than min length, max length = 0 (no limit)
-                if not has_numbers and re.search(r'\d',item) ==  None:             # if pw shouldn't have numbers and doesn't
-                    if not has_special_chars and re.search(r'\W',item) == None:
+        if item != None:
+            if item not in possible_passwords and item != pw:
+                if len(item) <= max_length or max_length == 0 and len(item) >= min_length:  # if the string is less than max length or more than min length, max length = 0 (no limit)
+                    if not has_numbers and re.search(r'\d',item) ==  None:             # if pw shouldn't have numbers and doesn't
+                        if not has_special_chars and re.search(r'\W',item) == None:
+                            possible_passwords.append(item)
+                            items_added += 1
+                    elif not has_special_chars and re.search(r'\W',item) == None:     # if pw shouldn't have special chars and doesnt
                         possible_passwords.append(item)
                         items_added += 1
-                elif not has_special_chars and re.search(r'\W',item) == None:     # if pw shouldn't have special chars and doesnt
-                    possible_passwords.append(item)
-                    items_added += 1
 
-                if must_have_numbers and re.search(r'\d',item) != None:
-                    if must_have_special_chars and re.search(r'\W',item) != None:
+                    if must_have_numbers and re.search(r'\d',item) != None:
+                        if must_have_special_chars and re.search(r'\W',item) != None:
+                            possible_passwords.append(item)
+                            items_added += 1
+                    elif must_have_special_chars and re.search(r'\W',item) != None:
                         possible_passwords.append(item)
                         items_added += 1
-                elif must_have_special_chars and re.search(r'\W',item) != None:
-                    possible_passwords.append(item)
-                    items_added += 1
-                else:
-                    possible_passwords.append(item)
-                    items_added += 1
+                    else:
+                        possible_passwords.append(item)
+                        items_added += 1
 
-            if i >= max_words and not unlimited_passwords:
-                return items_added # returns items_added if function generated more than max_words
+                if i >= max_words and not unlimited_passwords:
+                    return items_added # returns items_added if function generated more than max_words
 
     if not unlimited_passwords:
         return items_added
@@ -72,41 +77,42 @@ def append_to_list(s,max_words):
         return 0
 
 def append_string_to_list(s):
-    if s not in possible_passwords and s != pw:
-        if len(s) <= max_length or max_length == 0 and len(s) >= min_length:  # if the string is less than max length or more than min length, max length = 0 (no limit)
-            if not has_numbers and re.search(r'\d',s) ==  None:             # if pw shouldn't have numbers and doesn't
-                if not has_special_chars and re.search(r'\W',s) == None:
-                    possible_passwords.append(s)
-                    if not unlimited_passwords:
-                        return 1
-                    else:
-                        return 0
-            elif not has_special_chars and re.search(r'\W',s) == None:     # if pw shouldn't have special chars and doesnt
-                    possible_passwords.append(s)
-                    if not unlimited_passwords:
-                        return 1
-                    else:
-                        return 0
+    if s != None:
+        if s not in possible_passwords and s != pw:
+            if len(s) <= max_length or max_length == 0 and len(s) >= min_length:  # if the string is less than max length or more than min length, max length = 0 (no limit)
+                if not has_numbers and re.search(r'\d',s) ==  None:             # if pw shouldn't have numbers and doesn't
+                    if not has_special_chars and re.search(r'\W',s) == None:
+                        possible_passwords.append(s)
+                        if not unlimited_passwords:
+                            return 1
+                        else:
+                            return 0
+                elif not has_special_chars and re.search(r'\W',s) == None:     # if pw shouldn't have special chars and doesnt
+                        possible_passwords.append(s)
+                        if not unlimited_passwords:
+                            return 1
+                        else:
+                            return 0
 
-            if must_have_numbers and re.search(r'\d',s) != None:
-                if must_have_special_chars and re.search(r'\W',s) != None:
+                if must_have_numbers and re.search(r'\d',s) != None:
+                    if must_have_special_chars and re.search(r'\W',s) != None:
+                        possible_passwords.append(s)
+                        if not unlimited_passwords:
+                            return 1
+                        else:
+                            return 0
+                elif must_have_special_chars and re.search(r'\W',s) != None:
                     possible_passwords.append(s)
                     if not unlimited_passwords:
                         return 1
                     else:
                         return 0
-            elif must_have_special_chars and re.search(r'\W',s) != None:
-                possible_passwords.append(s)
-                if not unlimited_passwords:
-                    return 1
                 else:
-                    return 0
-            else:
-                possible_passwords.append(s)
-                if not unlimited_passwords:
-                    return 1
-                else:
-                    return 0
+                    possible_passwords.append(s)
+                    if not unlimited_passwords:
+                        return 1
+                    else:
+                        return 0
 
     return 0
 
@@ -253,16 +259,14 @@ def swap_startend_nums(pw):
 
 def add_most_popular_numbers(pw,top=0,is_char_sub=False):
     generated_pws = list()
-    if re.search(r'^\d[a-zA-Z]+',pw) != None:# if password starts with just 1 number
-        generated_pws+=iterate_num_at_start_of_string(pw)
-
-    if re.search(r'[a-zA-Z]+\d$',pw) != None:# if password ends with just 1 number
-        generated_pws+=iterate_num_at_end_of_string(pw)
-
-
     if not is_char_sub:
+        if re.search(r'^\d[a-zA-Z]+',pw) != None:# if password starts with just 1 number
+            generated_pws+=iterate_num_at_start_of_string(pw)
+
+        if re.search(r'[a-zA-Z]+\d$',pw) != None:# if password ends with just 1 number
+            generated_pws+=iterate_num_at_end_of_string(pw)
         pw = remove_nums_before_s(pw)                        # remove numbers from start of string
-        pw = remove_nums_after_s(pw)                          # remove numbers from end of string
+        pw = remove_nums_after_s(pw)                         # remove numbers from end of string
 
     i = 1
 
@@ -477,70 +481,71 @@ def strip_startend_nums_from_s(word):       # returns a list of 2 strings, nums 
 
 if __name__ == "__main__":
     num_of_funcs = 6        # number of functions applied to password
-    if len(argv) < 2:
-        print("Usage: " + str(argv[0]) + " [PASSWORD]")
-        print("Seperate words in passphrases with ','")
-        print("Flags (Place flags after password):\n"+
-        "   -o=OUTPUT FILE (Default = current directory, [PASSWORD].txt)\n" +
-        "   -min-length=MIN LENGTH (Default = 0)\n" +
-        "   -max-length=MAX LENGTH (Default = unlimited)\n" +
-        "   -max-passwords=MAX WORDS GENERATED (Default = unlimited)\n"
-        "   -no-numbers\n" +
-        "   -no-special-chars\n" +
-        "   -no-nlp\n" +
-        "   -model-path=PATH TO CUSTOM MODEL (Default = " + model_path + ")\n"
-        "   -must-have-numbers\n"+
-        "   -must-have-special-chars\n"+
-        "   -try-all-capitalisation (will try every possible pattern using capitalisation)\n" +
-        "   -num-of-words=[NUMBER OF WORDS TO BE RETURNED BY THE MODEL] (default = 5)")
-        exit()
+    # if len(argv) < 2:
+    #     print("Usage: " + str(argv[0]) + " [PASSWORD]")
+    #     print("Seperate words in passphrases with ','")
+    #     print("Flags (Place flags after password):\n"+
+    #     "   -o=OUTPUT FILE (Default = current directory, [PASSWORD].txt)\n" +
+    #     "   -min-length=MIN LENGTH (Default = 0)\n" +
+    #     "   -max-length=MAX LENGTH (Default = unlimited)\n" +
+    #     "   -max-passwords=MAX WORDS GENERATED (Default = unlimited)\n"
+    #     "   -no-numbers\n" +
+    #     "   -no-special-chars\n" +
+    #     "   -no-nlp\n" +
+    #     "   -model-path=PATH TO CUSTOM MODEL (Default = " + model_path + ")\n"
+    #     "   -must-have-numbers\n"+
+    #     "   -must-have-special-chars\n"+
+    #     "   -try-all-capitalisation (will try every possible pattern using capitalisation)\n" +
+    #     "   -num-of-words=[NUMBER OF WORDS TO BE RETURNED BY THE MODEL] (default = 5)")
+    #     exit()
 
-    pw = str(argv[1]).strip()
+    # pw = str(argv[1]).strip()
+    pw = 'Boil,The,Jug2'
     outpath = pw + '.txt'               # default outpath is [inputted password].txt in current directory"
     
-    for arg in argv:
-        if '-o=' in arg:
-            outpath = arg.split('=')[-1]
-        elif '-min-length=' in arg:
-            try:
-                min_length = int(''.join(arg.split('=')[-1]))
-            except ValueError:
-                print(arg + " - value not convertible to integer")
-                exit()
-        elif '-max-length=' in arg:
-            try:
-                max_length = int(''.join(arg.split('=')[-1]))
-            except ValueError:
-                print(arg + " - value not convertible to integer")
-                exit()
-        elif '-max-passwords=' in arg:
-            try:
-                max_passwords = int(''.join(arg.split('=')[-1]))
-                unlimited_passwords = False
-            except ValueError:
-                print(arg + " - value not convertible to integer")
-                exit()
-        elif '-no-numbers' in arg:
-            has_numbers = False
-        elif '-no-special-chars' in arg:
-            has_special_chars = False
-        elif '-no-nlp' in arg:
-            use_nlp = False
-            num_of_funcs -=1
-        elif 'model-path=' in arg:
-            model_path = arg.split('=')[-1]
-        elif '-must-have-numbers' in arg:
-            must_have_numbers = True
-        elif '-must-have-special-chars' in arg:
-            must_have_special_chars = True
-        elif 'try-all-capitalisation' in arg:
-            try_all_capitalisation = True
-        elif '-num-of-words' in arg:
-            try:
-                num = int(arg.split('=')[-1])
-            except ValueError:
-                print(str(arg) + " - value not convertible to integer")
-                exit()
+    # for arg in argv:
+    #     if '-o=' in arg:
+    #         outpath = arg.split('=')[-1]
+    #     elif '-min-length=' in arg:
+    #         try:
+    #             min_length = int(''.join(arg.split('=')[-1]))
+    #         except ValueError:
+    #             print(arg + " - value not convertible to integer")
+    #             exit()
+    #     elif '-max-length=' in arg:
+    #         try:
+    #             max_length = int(''.join(arg.split('=')[-1]))
+    #         except ValueError:
+    #             print(arg + " - value not convertible to integer")
+    #             exit()
+    #     elif '-max-passwords=' in arg:
+    #         try:
+    #             max_passwords = int(''.join(arg.split('=')[-1]))
+    #             unlimited_passwords = False
+    #         except ValueError:
+    #             print(arg + " - value not convertible to integer")
+    #             exit()
+    #     elif '-no-numbers' in arg:
+    #         has_numbers = False
+    #     elif '-no-special-chars' in arg:
+    #         has_special_chars = False
+    #     elif '-no-nlp' in arg:
+    #         use_nlp = False
+    #         num_of_funcs -=1
+    #     elif 'model-path=' in arg:
+    #         model_path = arg.split('=')[-1]
+    #     elif '-must-have-numbers' in arg:
+    #         must_have_numbers = True
+    #     elif '-must-have-special-chars' in arg:
+    #         must_have_special_chars = True
+    #     elif 'try-all-capitalisation' in arg:
+    #         try_all_capitalisation = True
+    #     elif '-num-of-words' in arg:
+    #         try:
+    #             num = int(arg.split('=')[-1])
+    #         except ValueError:
+    #             print(str(arg) + " - value not convertible to integer")
+    #             exit()
 
     passphrase = pw.split(',')                      # split passphrase into individual words
     pw = pw.replace(',','')                         # remove char to split passphrase
@@ -643,19 +648,19 @@ if __name__ == "__main__":
                     elif count > max_words and max_words != 0:
                         break
 
-            if max_passwords < 0:
-                break
-            if len(item) > min_length:
-                if count < max_words or max_words == 0:
-                    result = append_to_list(popular_nums,max_words)
-                    count += result
-                    max_passwords -= result
-                    if max_passwords < 0:
-                        break
-                    elif count > max_words and max_words != 0:
-                        continue
-            else:
-                print(item + " - Word not longer than min length, skipping char substitution.")
+                if max_passwords < 0:
+                    break
+                if len(item) > min_length:
+                    if count < max_words or max_words == 0:
+                        result = append_to_list(popular_nums,max_words)
+                        count += result
+                        max_passwords -= result
+                        if max_passwords < 0:
+                            break
+                        elif count > max_words and max_words != 0:
+                            continue
+                else:
+                    print(item + " - Word not longer than min length, skipping char substitution.")
 
     print('Generated ' + str(len(possible_passwords)) + ' possible passwords using specified requirements in ' + str(round(time()-total_time,2)) + ' seconds.')
 
