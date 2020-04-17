@@ -41,7 +41,7 @@ def test_rockyou(new_password):
     return ret
 
 def main():
-    chdir('/home/zack/Desktop/Hons-Project')
+    chdir('/home/zack/Desktop/Hons-Project/testing')
     results = ['Old Password,New Password,Custom Wordlist,RockYou Wordlist\n']
 
     testfile = open('test passwords.txt', 'r').readlines()
