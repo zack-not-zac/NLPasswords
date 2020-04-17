@@ -64,7 +64,7 @@ def append_to_list(s,max_words):
                         possible_passwords.append(item)
                         items_added += 1
 
-                if i >= max_words and not unlimited_passwords:
+                if items_added >= max_words:
                     return items_added # returns items_added if function generated more than max_words
 
     if not unlimited_passwords:
