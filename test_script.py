@@ -4,7 +4,7 @@ import subprocess
 def test_custom(old_password,new_password):
     ret = str()
     print('Testing ' + old_password)
-    command = '/home/zack/Desktop/Hons-Project/create_wordlist.py ' + \
+    command = '/home/zack/Desktop/Hons-Project/NLPasswords.py ' + \
         str(old_password)
     subprocess.call(command, shell=True, stdout=subprocess.DEVNULL)
 
