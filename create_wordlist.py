@@ -6,6 +6,9 @@ from sys import argv
 import re
 from time import time
 
+from os import chdir
+chdir('/home/zack/Desktop/Hons-Project')
+
 total_time = time()                 # starts a timer
 num_of_words = 5                    # num of words returned by the NLP model
 possible_passwords = list()         # a list for generated pws
@@ -164,8 +167,8 @@ def char_substitution(word):
 
     return substituted_passwords
 
-def remove_substitution(word):
-    possible_words = set()
+def remove_substitution(word,removeall=False):
+    possible_words = list()
     substitutions = set()
 
     chars = {
@@ -184,6 +187,33 @@ def remove_substitution(word):
         "0":"o",
         "2":"z",
     }
+    
+    if removeall:
+        temp = word
+        saved = []
+        for char in temp:
+            if chars.get(char.lower()) != None:
+                subs = chars.get(char.lower()).split(',')
+                if len(subs) > 1:
+                    saved.append((char,subs))
+                else:
+                    temp = temp.replace(char,subs[0])
+
+        if saved != None:
+            templist = []
+            templist.append(temp)
+            for sub in saved:
+                for char in sub[1]:
+                    copy = templist.copy()
+                    for item in copy:
+                        if temp.replace(sub[0],char) not in templist:
+                            templist.append(temp.replace(sub[0],char))
+
+            for item in templist:
+                if re.search(r'\d+',item) == None:
+                    possible_words.append(item)   
+        else:
+            possible_words.append(temp)         
 
     for char in word:                                                       # for each character in password
         if chars.get(char.lower()) != None:                                 # if a substitution exists
@@ -192,14 +222,14 @@ def remove_substitution(word):
     for sub in substitutions:
         positions = [x for x,v in enumerate(word) if v.lower() == sub[0]]   # get all positions char (v) exists
         for pos in positions:                                               # for each position
-            possible_words.add(put_char_in_pos(sub,pos,word))               # swap chars and add to list
+            possible_words.append(put_char_in_pos(sub,pos,word))               # swap chars and add to list
             if len(positions) > 1:                                          # if more than 1 position
                 s = replace_all_occurences_forward(word,sub[0],sub[1],pos)  # replace every occurence from current pos forward
-                possible_words.add(s)
+                possible_words.append(s)
 
             temp_possible_words = possible_words.copy()              # create a copy of current substituted words set
             for item in temp_possible_words:                         # for each item in possible_words before forloop began
-                possible_words.add(put_char_in_pos(sub,pos,item))    # apply this substitution and add to substituted passwords
+                possible_words.append(put_char_in_pos(sub,pos,item))    # apply this substitution and add to substituted passwords
 
     return possible_words
 
@@ -315,20 +345,21 @@ def query_model(word):
             exit()
 
     word = word.lower()                 # convert word to lowercase
-    word = remove_nums_after_s(word)
-    word = remove_nums_before_s(word)
+    s = remove_nums_after_s(word)
+    s = remove_nums_before_s(s)
 
-    if word not in stopwords:                                   # only queries the model if word is not a stopword
+    if s not in stopwords:                                   # only queries the model if word is not a stopword
         try:
-            print("Querying model for: " + word)
-            most_similar = model.wv.most_similar(word, topn=num_of_words)
+            print("Querying model for: " + s)
+            most_similar = model.wv.most_similar(s, topn=num_of_words)
         except KeyError:
             word_found = False
-            for ret_word in remove_substitution(word):
+            for ret_word in remove_substitution(word,removeall=True):
                 try:
                     most_similar = model.wv.most_similar(ret_word,topn=num_of_words)
                     word_found = True                               # becomes true if exception does not occur
                     print("Word stripped to: " + ret_word)
+                    break
                 except KeyError:
                     try:
                         ret_word = remove_nums_after_s(ret_word)
@@ -336,6 +367,7 @@ def query_model(word):
                         most_similar = model.wv.most_similar(ret_word,topn=num_of_words)
                         word_found = True
                         print("Word stripped to: " + ret_word)
+                        break
                     except KeyError:
                         continue
 
@@ -478,70 +510,71 @@ def strip_startend_nums_from_s(word):       # returns a list of 2 strings, nums 
 
 if __name__ == "__main__":
     num_of_funcs = 6        # number of functions applied to password
-    if len(argv) < 2:
-        print("Usage: " + str(argv[0]) + " [PASSWORD]")
-        print("Seperate words in passphrases with ','")
-        print("Flags (Place flags after password):\n"+
-        "   -o=OUTPUT FILE (Default = current directory, [PASSWORD].txt)\n" +
-        "   -min-length=MIN LENGTH (Default = 0)\n" +
-        "   -max-length=MAX LENGTH (Default = unlimited)\n" +
-        "   -max-passwords=MAX WORDS GENERATED (Default = unlimited)\n"
-        "   -no-numbers\n" +
-        "   -no-special-chars\n" +
-        "   -no-nlp\n" +
-        "   -model-path=PATH TO CUSTOM MODEL (Default = " + model_path + ")\n"
-        "   -must-have-numbers\n"+
-        "   -must-have-special-chars\n"+
-        "   -try-all-capitalisation (will try every possible pattern using capitalisation)\n" +
-        "   -num-of-words=[NUMBER OF WORDS TO BE RETURNED BY THE MODEL] (default = 5)")
-        exit()
+    # if len(argv) < 2:
+    #     print("Usage: " + str(argv[0]) + " [PASSWORD]")
+    #     print("Seperate words in passphrases with ','")
+    #     print("Flags (Place flags after password):\n"+
+    #     "   -o=OUTPUT FILE (Default = current directory, [PASSWORD].txt)\n" +
+    #     "   -min-length=MIN LENGTH (Default = 0)\n" +
+    #     "   -max-length=MAX LENGTH (Default = unlimited)\n" +
+    #     "   -max-passwords=MAX WORDS GENERATED (Default = unlimited)\n"
+    #     "   -no-numbers\n" +
+    #     "   -no-special-chars\n" +
+    #     "   -no-nlp\n" +
+    #     "   -model-path=PATH TO CUSTOM MODEL (Default = " + model_path + ")\n"
+    #     "   -must-have-numbers\n"+
+    #     "   -must-have-special-chars\n"+
+    #     "   -try-all-capitalisation (will try every possible pattern using capitalisation)\n" +
+    #     "   -num-of-words=[NUMBER OF WORDS TO BE RETURNED BY THE MODEL] (default = 5)")
+    #     exit()
 
-    pw = str(argv[1]).strip()
+    # pw = str(argv[1]).strip()
+    pw = 'Z0mb13'
     outpath = pw + '.txt'               # default outpath is [inputted password].txt in current directory"
     
-    for arg in argv:
-        if '-o=' in arg:
-            outpath = arg.split('=')[-1]
-        elif '-min-length=' in arg:
-            try:
-                min_length = int(''.join(arg.split('=')[-1]))
-            except ValueError:
-                print(arg + " - value not convertible to integer")
-                exit()
-        elif '-max-length=' in arg:
-            try:
-                max_length = int(''.join(arg.split('=')[-1]))
-            except ValueError:
-                print(arg + " - value not convertible to integer")
-                exit()
-        elif '-max-passwords=' in arg:
-            try:
-                max_passwords = int(''.join(arg.split('=')[-1]))
-                unlimited_passwords = False
-            except ValueError:
-                print(arg + " - value not convertible to integer")
-                exit()
-        elif '-no-numbers' in arg:
-            has_numbers = False
-        elif '-no-special-chars' in arg:
-            has_special_chars = False
-        elif '-no-nlp' in arg:
-            use_nlp = False
-            num_of_funcs -=1
-        elif 'model-path=' in arg:
-            model_path = arg.split('=')[-1]
-        elif '-must-have-numbers' in arg:
-            must_have_numbers = True
-        elif '-must-have-special-chars' in arg:
-            must_have_special_chars = True
-        elif 'try-all-capitalisation' in arg:
-            try_all_capitalisation = True
-        elif '-num-of-words' in arg:
-            try:
-                num = int(arg.split('=')[-1])
-            except ValueError:
-                print(str(arg) + " - value not convertible to integer")
-                exit()
+    # for arg in argv:
+    #     if '-o=' in arg:
+    #         outpath = arg.split('=')[-1]
+    #     elif '-min-length=' in arg:
+    #         try:
+    #             min_length = int(''.join(arg.split('=')[-1]))
+    #         except ValueError:
+    #             print(arg + " - value not convertible to integer")
+    #             exit()
+    #     elif '-max-length=' in arg:
+    #         try:
+    #             max_length = int(''.join(arg.split('=')[-1]))
+    #         except ValueError:
+    #             print(arg + " - value not convertible to integer")
+    #             exit()
+    #     elif '-max-passwords=' in arg:
+    #         try:
+    #             max_passwords = int(''.join(arg.split('=')[-1]))
+    #             unlimited_passwords = False
+    #         except ValueError:
+    #             print(arg + " - value not convertible to integer")
+    #             exit()
+    #     elif '-no-numbers' in arg:
+    #         has_numbers = False
+    #     elif '-no-special-chars' in arg:
+    #         has_special_chars = False
+    #     elif '-no-nlp' in arg:
+    #         use_nlp = False
+    #         num_of_funcs -=1
+    #     elif 'model-path=' in arg:
+    #         model_path = arg.split('=')[-1]
+    #     elif '-must-have-numbers' in arg:
+    #         must_have_numbers = True
+    #     elif '-must-have-special-chars' in arg:
+    #         must_have_special_chars = True
+    #     elif 'try-all-capitalisation' in arg:
+    #         try_all_capitalisation = True
+    #     elif '-num-of-words' in arg:
+    #         try:
+    #             num = int(arg.split('=')[-1])
+    #         except ValueError:
+    #             print(str(arg) + " - value not convertible to integer")
+    #             exit()
 
     passphrase = pw.split(',')                      # split passphrase into individual words
     pw = pw.replace(',','')                         # remove char to split passphrase
@@ -561,14 +594,14 @@ if __name__ == "__main__":
     print("Switching any starting or ending numbers or special characters...")
     max_passwords -= append_string_to_list(swap_startend_nums(pw))
     # sets max_passwords to how many spaces are left
-
-    if has_special_chars and must_have_special_chars or unlimited_passwords:
-            add_common_startend_chars(pw)
+    
     if has_numbers:
         print("Adding popular numbers to original password...")
         max_passwords -= append_to_list(add_most_popular_numbers(pw),words_per_func)
 
     print("Removing any substitution from original password...")
+    if unlimited_passwords or must_have_special_chars:  
+        max_passwords -= append_to_list(add_common_startend_chars(pw),words_per_func)
     max_passwords -= append_to_list(remove_substitution(pw),words_per_func)
     print("Performing character substitution on original password...")
     char_substitutes = char_substitution(pw)
