@@ -452,6 +452,7 @@ def print_settings():
 
 def capitalise_letters(phrase):
     global try_all_capitalisation
+    global unlimited_passwords
     ret = set()
     temp_phrase = str()
     for word in phrase:
@@ -461,7 +462,7 @@ def capitalise_letters(phrase):
     ret.add(''.join(phrase).upper())         # add full capitalisation
     ret.add(''.join(phrase).lower())         # add full lowercase
 
-    if try_all_capitalisation:
+    if try_all_capitalisation or unlimited_passwords:
         l=list(''.join(phrase))
         for x,char in enumerate(l):
             temp = l.copy()
