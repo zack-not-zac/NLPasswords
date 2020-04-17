@@ -41,7 +41,7 @@ def append_to_list(s,max_words):
         max_words = 1500            # max number of words that can be added by 1 function
     items_added = 0
     global possible_passwords
-    for i,item in enumerate(s):
+    for item in s:
         if item != None:
             if item not in possible_passwords and item != pw:
                 if len(item) <= max_length or max_length == 0 and len(item) >= min_length:  # if the string is less than max length or more than min length, max length = 0 (no limit)
