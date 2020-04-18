@@ -6,6 +6,9 @@ from sys import argv
 import re
 from time import time
 
+from os import chdir
+chdir('/home/zack/Desktop/Hons-Project')
+
 total_time = time()                 # starts a timer
 num_of_words = 5                    # num of words returned by the NLP model
 possible_passwords = list()         # a list for generated pws
@@ -144,7 +147,7 @@ def char_substitution(word):
 
     substitutions = set()
 
-    if len(word) > 20:
+    if len(word) >  16:
         return []
 
     for char in word:                                                       # for each character in password
@@ -511,70 +514,71 @@ def strip_startend_nums_from_s(word):       # returns a list of 2 strings, nums 
 
 if __name__ == "__main__":
     num_of_funcs = 6        # number of functions applied to password
-    if len(argv) < 2:
-        print("Usage: " + str(argv[0]) + " [PASSWORD]")
-        print("Seperate words in passphrases with ','")
-        print("Flags (Place flags after password):\n"+
-        "   -o=OUTPUT FILE (Default = current directory, [PASSWORD].txt)\n" +
-        "   -min-length=MIN LENGTH (Default = 0)\n" +
-        "   -max-length=MAX LENGTH (Default = unlimited)\n" +
-        "   -max-passwords=MAX WORDS GENERATED (Default = unlimited)\n"
-        "   -no-numbers\n" +
-        "   -no-special-chars\n" +
-        "   -no-nlp\n" +
-        "   -model-path=PATH TO CUSTOM MODEL (Default = " + model_path + ")\n"
-        "   -must-have-numbers\n"+
-        "   -must-have-special-chars\n"+
-        "   -try-all-capitalisation (will try every possible pattern using capitalisation)\n" +
-        "   -num-of-words=[NUMBER OF WORDS TO BE RETURNED BY THE MODEL] (default = 5)")
-        exit()
+    # if len(argv) < 2:
+    #     print("Usage: " + str(argv[0]) + " [PASSWORD]")
+    #     print("Seperate words in passphrases with ','")
+    #     print("Flags (Place flags after password):\n"+
+    #     "   -o=OUTPUT FILE (Default = current directory, [PASSWORD].txt)\n" +
+    #     "   -min-length=MIN LENGTH (Default = 0)\n" +
+    #     "   -max-length=MAX LENGTH (Default = unlimited)\n" +
+    #     "   -max-passwords=MAX WORDS GENERATED (Default = unlimited)\n"
+    #     "   -no-numbers\n" +
+    #     "   -no-special-chars\n" +
+    #     "   -no-nlp\n" +
+    #     "   -model-path=PATH TO CUSTOM MODEL (Default = " + model_path + ")\n"
+    #     "   -must-have-numbers\n"+
+    #     "   -must-have-special-chars\n"+
+    #     "   -try-all-capitalisation (will try every possible pattern using capitalisation)\n" +
+    #     "   -num-of-words=[NUMBER OF WORDS TO BE RETURNED BY THE MODEL] (default = 5)")
+    #     exit()
 
-    pw = str(argv[1]).strip()
+    # pw = str(argv[1]).strip()
+    pw = 'Football,Chicken,Youtube'
     outpath = pw + '.txt'               # default outpath is [inputted password].txt in current directory"
     
-    for arg in argv:
-        if '-o=' in arg:
-            outpath = arg.split('=')[-1]
-        elif '-min-length=' in arg:
-            try:
-                min_length = int(''.join(arg.split('=')[-1]))
-            except ValueError:
-                print(arg + " - value not convertible to integer")
-                exit()
-        elif '-max-length=' in arg:
-            try:
-                max_length = int(''.join(arg.split('=')[-1]))
-            except ValueError:
-                print(arg + " - value not convertible to integer")
-                exit()
-        elif '-max-passwords=' in arg:
-            try:
-                max_passwords = int(''.join(arg.split('=')[-1]))
-                unlimited_passwords = False
-            except ValueError:
-                print(arg + " - value not convertible to integer")
-                exit()
-        elif '-no-numbers' in arg:
-            has_numbers = False
-        elif '-no-special-chars' in arg:
-            has_special_chars = False
-        elif '-no-nlp' in arg:
-            use_nlp = False
-            num_of_funcs -=1
-        elif 'model-path=' in arg:
-            model_path = arg.split('=')[-1]
-        elif '-must-have-numbers' in arg:
-            must_have_numbers = True
-        elif '-must-have-special-chars' in arg:
-            must_have_special_chars = True
-        elif 'try-all-capitalisation' in arg:
-            try_all_capitalisation = True
-        elif '-num-of-words' in arg:
-            try:
-                num = int(arg.split('=')[-1])
-            except ValueError:
-                print(str(arg) + " - value not convertible to integer")
-                exit()
+    # for arg in argv:
+    #     if '-o=' in arg:
+    #         outpath = arg.split('=')[-1]
+    #     elif '-min-length=' in arg:
+    #         try:
+    #             min_length = int(''.join(arg.split('=')[-1]))
+    #         except ValueError:
+    #             print(arg + " - value not convertible to integer")
+    #             exit()
+    #     elif '-max-length=' in arg:
+    #         try:
+    #             max_length = int(''.join(arg.split('=')[-1]))
+    #         except ValueError:
+    #             print(arg + " - value not convertible to integer")
+    #             exit()
+    #     elif '-max-passwords=' in arg:
+    #         try:
+    #             max_passwords = int(''.join(arg.split('=')[-1]))
+    #             unlimited_passwords = False
+    #         except ValueError:
+    #             print(arg + " - value not convertible to integer")
+    #             exit()
+    #     elif '-no-numbers' in arg:
+    #         has_numbers = False
+    #     elif '-no-special-chars' in arg:
+    #         has_special_chars = False
+    #     elif '-no-nlp' in arg:
+    #         use_nlp = False
+    #         num_of_funcs -=1
+    #     elif 'model-path=' in arg:
+    #         model_path = arg.split('=')[-1]
+    #     elif '-must-have-numbers' in arg:
+    #         must_have_numbers = True
+    #     elif '-must-have-special-chars' in arg:
+    #         must_have_special_chars = True
+    #     elif 'try-all-capitalisation' in arg:
+    #         try_all_capitalisation = True
+    #     elif '-num-of-words' in arg:
+    #         try:
+    #             num = int(arg.split('=')[-1])
+    #         except ValueError:
+    #             print(str(arg) + " - value not convertible to integer")
+    #             exit()
 
     passphrase = pw.split(',')                      # split passphrase into individual words
     pw = pw.replace(',','')                         # remove char to split passphrase
