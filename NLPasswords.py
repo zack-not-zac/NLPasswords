@@ -144,6 +144,9 @@ def char_substitution(word):
 
     substitutions = set()
 
+    if len(word) > 20:
+        return []
+
     for char in word:                                                       # for each character in password
         if chars.get(char.lower()) != None:                                 # if a substitution exists
             for char_substitute in chars.get(char.lower()).split(','):      # get all substitutions
