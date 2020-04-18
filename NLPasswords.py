@@ -533,7 +533,7 @@ if __name__ == "__main__":
         exit()
 
     pw = str(argv[1]).strip()
-    outpath = pw + '.txt'               # default outpath is [inputted password].txt in current directory"
+    outpath = pw.replace(',','') + '.txt'               # default outpath is [inputted password].txt in current directory"
     
     for arg in argv:
         if '-o=' in arg:
@@ -643,26 +643,27 @@ if __name__ == "__main__":
                 max_words = 0
                 
         for word in passphrase:
+            startnum = None
+            endnum = None
+            startend_nums = strip_startend_nums_from_s(word)# retreive any numbers at start or end
+            if len(startend_nums) != 0:                 # if pw has numbers at start or end
+                for num in startend_nums:               # for each value
+                    if num[0] =='start':                # if num is start number
+                        startnum = num[1]               # gets start numbers from pw
+                    elif num[0] == 'end':               # if num is end number
+                        endnum = num[1]                 # gets end numbers from pw
+
             for item in query_model(word):
                 count = 0                                   # ensures each word does not use more than it was dedicated in wordlist
                 tempword = str()
-                startend_nums = strip_startend_nums_from_s(word)# retreive any numbers at start or end
-                if len(startend_nums) != 0:                 # if pw has numbers at start or end
-                    for num in startend_nums:               # for each value
-                        if num[0] =='start':                # if num is start number
-                            startnum = num[1]               # gets start numbers from pw
-                        elif num[0] == 'end':               # if num is end number
-                            endnum = num[1]                 # gets end numbers from pw
-
-                item = pw.replace(word,item)
                 
                 popular_nums = add_most_popular_numbers(item)# add most popular numbers to the item
                 charsub = char_substitution(item)           # get char substitution for item
 
-                if startnum != None:
-                    tempword += str(startnum)           # appends startnum to item if exists
-
                 tempword += item
+
+                if startnum != None:
+                    tempword = str(startnum) + tempword           # appends startnum to item if exists
 
                 if endnum != None:
                     tempword += str(endnum)             # appends endnum to item if exists

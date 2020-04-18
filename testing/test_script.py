@@ -10,7 +10,7 @@ def test_custom(old_password, new_password):
     subprocess.call(command, shell=True, stdout=subprocess.DEVNULL)
 
     # test with custom wordlist
-    pws = open(old_password + '.txt', 'r').readlines()
+    pws = open(old_password.replace(',','') + '.txt', 'r').readlines()
     for attempts, generated_pw in enumerate(pws):
         found = False
         generated_pw = generated_pw.strip()
@@ -21,7 +21,7 @@ def test_custom(old_password, new_password):
         elif attempts == len(pws)-1 and found == False:
             ret = 'NF'
 
-    subprocess.call('rm ' + old_password + '.txt',
+    subprocess.call('rm ' + old_password.replace(',','') + '.txt',
                     shell=True, stdout=subprocess.DEVNULL)
 
     return ret
