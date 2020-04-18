@@ -1,0 +1,29 @@
+- scripts
+filter1000.py - Script to filter first 1000 non-latin character passwords from a breach compilation of 1.4B passwords
+filter_breachcomp.py - Same as above, only for the entire 1.4B word dataset
+filter_tweets.py - Used to filter the tweet data used to train models.
+gensim_fasttext.py - Code test for FastText models
+gensim_w2v.py - Code test for Word2Vec models
+open_breachcomp.py - Used to print words and whether they were valid or invalid based on rules used (Used for testing)
+wordlist_filter.py - Test of a multi-threaded filter (Doesn't work)
+wordnet_test.py - When deciding on a model, NLTK's WordNet was also considered, however was found to be too limited
+NLPasswords - Finished wordlist generation script
+train_ft.py - Used to train test FastText model
+train_w2v.py - Used to train test Word2Vec model
+train_w2v_full.py - Used to train final model for NLPasswords script
+test_models.py - Used to get data from test models to evaluate which is most useful
+test_script.py - Used to compare custom wordlist to common wordlist for final testing
+
+- models
+w2v_wikipedia_and_reddit_comments.model - NLP Model for NLPasswords script
+w2v_twitteronly.model - Word2Vec model trained for testing purposes
+ft_twitteronly.model - FastText model trained for testing purposes
+
+- data
+test passwords.txt - Passwords used to test program
+testresults.csv - results from testing above passwords
+performance.txt - Comparison of performace using sets vs lists
+number_occurences.csv - number occurences counted from darknet top 10000 dataset
+requirements.txt - Used by Python pip to install library dependencies automatically
+
+
