@@ -7,7 +7,8 @@
 ```bash
 pip3 install -r requirements.txt
 ```
-4. Run script using:
+4. Place downloaded NLP model into "models/w2v" or specify a custom path with the "-model-path=" flag.
+5. Run script using:
 ```bash
 ./NLPasswords.py
 ```
