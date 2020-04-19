@@ -5,12 +5,12 @@ import subprocess
 def test_custom(old_password, new_password):
     ret = str()
     print('Testing ' + old_password)
-    command = '/home/zack/Desktop/Hons-Project/NLPasswords.py ' + \
-        str(old_password)
+    command = "/home/zack/Desktop/Hons-Project/NLPasswords.py '" + \
+        str(old_password) + "'"
     subprocess.call(command, shell=True, stdout=subprocess.DEVNULL)
 
     # test with custom wordlist
-    pws = open(old_password.replace(',','') + '.txt', 'r').readlines()
+    pws = open(old_password.replace(',', '') + '.txt', 'r').readlines()
     for attempts, generated_pw in enumerate(pws):
         found = False
         generated_pw = generated_pw.strip()
@@ -21,10 +21,11 @@ def test_custom(old_password, new_password):
         elif attempts == len(pws)-1 and found == False:
             ret = 'NF'
 
-    subprocess.call('rm ' + old_password.replace(',','') + '.txt',
+    subprocess.call('rm ' + old_password.replace(',', '') + '.txt',
                     shell=True, stdout=subprocess.DEVNULL)
 
     return ret
+
 
 def test_rockyou(new_password):
     with open('/home/zack/Downloads/rockyou.txt', 'r', encoding='ISO-8859-1') as f:
@@ -41,6 +42,7 @@ def test_rockyou(new_password):
 
     return ret
 
+
 def test_probable_passwords(new_password):
     with open('/home/zack/Downloads/Top304Thousand-probable-v2.txt', 'r', encoding='ISO-8859-1') as f:
         for attempts, pw in enumerate(f):
@@ -55,6 +57,7 @@ def test_probable_passwords(new_password):
             ret = 'NF'
 
     return ret
+
 
 def main():
     chdir('/home/zack/Desktop/Hons-Project')
@@ -82,6 +85,7 @@ def main():
         outfile.write(result)
 
     outfile.close()
+
 
 if __name__ == '__main__':
     main()

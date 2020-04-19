@@ -131,6 +131,7 @@ def add_common_startend_chars(pw):
 
 def char_substitution(word):
     substituted_passwords = list()
+    max_items = None
     chars = {       # dictionary for char substitutions (https://code.sololearn.com/ceEeO2m4wGBG/#py)
         "a":"4,@",
         "b":"6,8",
@@ -148,7 +149,7 @@ def char_substitution(word):
     substitutions = set()
 
     if len(word) >  16:
-        return []
+        max_items = 2000                                                    # max items that can be generated if word is over 16 chars
 
     for char in word:                                                       # for each character in password
         if chars.get(char.lower()) != None:                                 # if a substitution exists
@@ -167,6 +168,9 @@ def char_substitution(word):
                 temp = put_char_in_pos(sub,pos,item)                        # for each item in substituted_passwords before forloop began
                 if temp not in substituted_passwords:
                     substituted_passwords.append(temp)                      # apply this substitution and add to substituted passwords
+
+            if max_items != None and len(substituted_passwords) > max_items:
+                return substituted_passwords
 
     return substituted_passwords
 
