@@ -21,7 +21,7 @@ def test_custom(old_password, new_password):
         elif attempts == len(pws)-1 and found == False:
             ret = 'NF'
 
-    subprocess.call('rm ' + old_password.replace(',', '') + '.txt',
+    subprocess.call("rm '" + old_password.replace(',', '') + ".txt'",
                     shell=True, stdout=subprocess.DEVNULL)
 
     return ret
