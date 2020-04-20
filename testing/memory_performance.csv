@@ -1,0 +1,7 @@
+Time Taken to generate wordlist for 'password123' using default settings
+RAM,Run 1 (s), Run 2 (s), Run 3 (s), Run 4 (s), Run 5(s)
+2GB,99.13,102.76,105.18,102.34,99.56
+4GB,33.55,15.03,14.68,14.37,16.26
+6GB,33.31,10.33,10.42,10.87,10.76
+8GB,35.39,10.44,8.9,9.08,8.97
+
