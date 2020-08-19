@@ -1,4 +1,6 @@
-# Hons-Project
+# Natural Language Passwords
+
+This tool was created for my honours project as a proof-of-concept, utilising a Word2Vec model combined with common password permutations to create a customised wordlist to the password or term given. This project proved that using these custom wordlists in a dictionary attack were more reliable and greatly more efficient than popular wordlists such as RockYou.
 
 ## Install
 1. Download the NLP model from [here.](https://drive.google.com/file/d/1Ws9m5iHbgN3IHPiGl1iVBMp-wS6cteXF/view?usp=sharing)
